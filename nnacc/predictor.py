@@ -88,7 +88,7 @@ class Predictor:
 
                         val_count += 1
 
-                val_metrics.append(val_metric.detach() / val_count)
+                val_metrics.append(val_metric / val_count)
 
         if val_dataset is not None:
             return torch.stack(train_losses).detach().to('cpu').numpy(),\
