@@ -48,7 +48,7 @@ class Predictor:
                 self.optim.step()
 
                 train_losses.append(loss)
-                pbar.set_description('Batch Loss: {}\t\tEpoch:'.format(loss))
+                pbar.set_description('Batch Loss: {}    Epoch'.format(loss))
 
             if val_dataset is not None:
                 val_iter = iter(val_dataset)
