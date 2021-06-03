@@ -1,2 +1,2 @@
-# nnacc
-NNACC - Neural Network Accelerator for Cosmology Codes
+# NNACC
+Neural Network Accelerator for Cosmology Codes
