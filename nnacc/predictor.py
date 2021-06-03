@@ -83,9 +83,10 @@ class Predictor:
                 val_losses.append(val_loss / val_count)
 
         if val_dataset is not None:
-            return torch.stack(train_losses).detach(), torch.stack(val_losses).detach()
+            return torch.stack(train_losses).detach().to('cpu').numpy(),\
+                   torch.stack(val_losses).detach().to('cpu').numpy()
         else:
-            return torch.stack(train_losses).detach()
+            return torch.stack(train_losses).detach().to('cpu').numpy()
 
     def predict(self, X):
         self.model.eval()
