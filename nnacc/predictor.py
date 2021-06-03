@@ -3,6 +3,7 @@ from torch import nn
 from .nn import ResBlock
 from tqdm.auto import tqdm
 
+
 class Predictor:
     def __init__(self, in_size, out_size, model=None, optim=None, device='cpu'):
         self.in_size = in_size
@@ -64,7 +65,6 @@ class Predictor:
 
                 val_losses.append(val_loss / val_count)
 
-
         if val_dataset is not None:
             return train_losses, val_losses
         else:
@@ -73,10 +73,19 @@ class Predictor:
     def predict(self, X, transform=None):
         self.model.eval()
 
+        if(len(X.shape) == 1):
+            X = X.view(1,-1)
+            one_input = True
+        else:
+            one_input = False
+
         with torch.no_grad():
             y_pred = self.model(X)
 
             if transform is not None:
                 y_pred = transform(y_pred)
+
+        if one_input:
+            y_pred = y_pred.view(-1)
 
         return y_pred

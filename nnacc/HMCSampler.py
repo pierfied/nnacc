@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from tqdm.auto import tqdm
 
+
 class HMCSampler:
     def __init__(self, lnP, x0, m, transform=None, device='cpu'):
         self.lnP = lnP

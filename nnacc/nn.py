@@ -1,6 +1,7 @@
 from torch import nn
 import torch.nn.functional as F
 
+
 class ResBlock(nn.Module):
     def __init__(self, in_size, out_size):
         super(ResBlock, self).__init__()
