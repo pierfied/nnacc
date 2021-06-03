@@ -5,7 +5,8 @@ from tqdm.auto import tqdm
 
 
 class Predictor:
-    def __init__(self, in_size, out_size, model=None, optim=None, device='cpu'):
+    def __init__(self, in_size, out_size, model=None, optim=None, X_transform=None,
+                 y_transform=None, device='cpu'):
         self.in_size = in_size
         self.out_size = out_size
         self.device = device
@@ -28,6 +29,16 @@ class Predictor:
         else:
             self.optim = torch.optim.Adam(self.model.parameters())
 
+        if X_transform is not None:
+            self.X_transform = X_transform
+        else:
+            self.X_transform = lambda x: x
+
+        if y_transform is not None:
+            self.y_transform = y_transform
+        else:
+            self.y_transform = lambda x: x
+
     def train(self, dataset, num_epochs, loss_fn, val_dataset=None):
         train_losses = []
         val_losses = []
@@ -39,9 +50,12 @@ class Predictor:
             self.model.train()
 
             for X, y_target in data_iter:
+                X = X.to(self.device)
+                y_target = y_target.to(self.device)
+
                 self.optim.zero_grad()
 
-                y_pred = self.model(X)
+                y_pred = self.y_transform(self.model(self.X_transform(X)))
                 loss = loss_fn(y_target, y_pred)
 
                 loss.backward()
@@ -58,8 +72,11 @@ class Predictor:
                 val_loss = 0
                 val_count = 0
                 for X, y_target in val_iter:
+                    X = X.to(self.device)
+                    y_target = y_target.to(self.device)
+
                     with torch.no_grad():
-                        y_pred = self.model(X)
+                        y_pred = self.y_transform(self.model(self.X_transform(X)))
                         val_loss += loss_fn(y_pred, y_target)
                         val_count += 1
 
@@ -70,20 +87,17 @@ class Predictor:
         else:
             return train_losses
 
-    def predict(self, X, transform=None):
+    def predict(self, X):
         self.model.eval()
 
-        if(len(X.shape) == 1):
-            X = X.view(1,-1)
+        if (len(X.shape) == 1):
+            X = X.view(1, -1)
             one_input = True
         else:
             one_input = False
 
         with torch.no_grad():
-            y_pred = self.model(X)
-
-            if transform is not None:
-                y_pred = transform(y_pred)
+            y_pred = self.y_transform(self.model(self.X_transform(X)))
 
         if one_input:
             y_pred = y_pred.view(-1)
