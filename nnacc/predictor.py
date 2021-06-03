@@ -39,9 +39,12 @@ class Predictor:
         else:
             self.y_transform = lambda x: x
 
-    def train(self, dataset, num_epochs, loss_fn, val_dataset=None):
+    def train(self, dataset, num_epochs, loss_fn, val_dataset=None, val_metric_fn=None):
         train_losses = []
-        val_losses = []
+        val_metrics = []
+
+        if val_metric_fn is None:
+            val_metric_fn = loss_fn
 
         pbar = tqdm(range(num_epochs))
         for i in pbar:
@@ -69,7 +72,7 @@ class Predictor:
 
                 self.model.eval()
 
-                val_loss = 0
+                val_metric = None
                 val_count = 0
                 for X, y_target in val_iter:
                     X = X.to(self.device)
@@ -77,14 +80,19 @@ class Predictor:
 
                     with torch.no_grad():
                         y_pred = self.y_transform(self.model(self.X_transform(X)))
-                        val_loss += loss_fn(y_pred, y_target)
+
+                        if val_metric is None:
+                            val_metric = val_metric_fn(y_pred, y_target)
+                        else:
+                            val_metric += val_metric_fn(y_pred, y_target)
+
                         val_count += 1
 
-                val_losses.append(val_loss / val_count)
+                val_metrics.append(val_metric / val_count)
 
         if val_dataset is not None:
             return torch.stack(train_losses).detach().to('cpu').numpy(),\
-                   torch.stack(val_losses).detach().to('cpu').numpy()
+                   torch.stack(val_metrics).detach().to('cpu').numpy()
         else:
             return torch.stack(train_losses).detach().to('cpu').numpy()
 
