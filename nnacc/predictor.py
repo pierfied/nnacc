@@ -105,8 +105,7 @@ class Predictor:
         else:
             one_input = False
 
-        with torch.no_grad():
-            y_pred = self.y_transform(self.model(self.X_transform(X)))
+        y_pred = self.y_transform(self.model(self.X_transform(X)))
 
         if one_input:
             y_pred = y_pred.view(-1)
