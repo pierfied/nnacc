@@ -59,7 +59,7 @@ class Predictor:
                 self.optim.zero_grad()
 
                 y_pred = self.y_transform(self.model(self.X_transform(X)))
-                loss = loss_fn(y_target, y_pred)
+                loss = loss_fn(y_pred, y_target)
 
                 loss.backward()
                 self.optim.step()
