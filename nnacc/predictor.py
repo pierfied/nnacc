@@ -4,9 +4,11 @@ from .nn import ResBlock
 from tqdm.auto import tqdm
 
 
-class Predictor:
+class Predictor(nn.Module):
     def __init__(self, in_size, out_size, model=None, optim=None, X_transform=None,
                  y_transform=None, device='cpu'):
+        super(Predictor, self).__init__()
+
         self.in_size = in_size
         self.out_size = out_size
         self.device = device
@@ -14,7 +16,7 @@ class Predictor:
         if model is not None:
             self.model = model.to(device)
         else:
-            hidden_size = max(in_size, out_size)
+            hidden_size = 256
             self.model = nn.Sequential(
                 nn.Linear(in_size, hidden_size),
                 ResBlock(hidden_size, hidden_size),
@@ -32,12 +34,12 @@ class Predictor:
         if X_transform is not None:
             self.X_transform = X_transform
         else:
-            self.X_transform = lambda x: x
+            self.X_transform = nn.Identity()
 
         if y_transform is not None:
             self.y_transform = y_transform
         else:
-            self.y_transform = lambda x: x
+            self.y_transform = nn.Identity()
 
     def train(self, dataset, num_epochs, loss_fn, val_dataset=None, val_metric_fn=None):
         train_losses = []
@@ -95,6 +97,9 @@ class Predictor:
                    torch.stack(val_metrics).detach().to('cpu').numpy()
         else:
             return torch.stack(train_losses).detach().to('cpu').numpy()
+
+    def forward(self, X):
+        return self.predict(X)
 
     def predict(self, X):
         self.model.eval()
